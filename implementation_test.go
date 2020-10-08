@@ -8,9 +8,18 @@ import (
 )
 
 func TestPostfixToPrefix(t *testing.T) {
-	res, err := PostfixToPrefix("4 2 - 3 * 5 +")
-	if assert.Nil(t, err) {
-		assert.Equal(t, "+ 5 * - 4 2 3", res)
+	cases := []struct {
+		in, want string
+	}{
+		{ "2 2 +", "+ 2 2" },
+		{ "4 2 - 3 * 5 +", "+ * - 4 2 3 5" },
+	}
+
+	for _, c := range cases {
+		res, err := PostfixToPrefix(c.in)
+		if assert.Nil(t, err) {
+			assert.Equal(t, c.want, res)
+		}
 	}
 }
 

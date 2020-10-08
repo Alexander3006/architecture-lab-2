@@ -2,38 +2,37 @@ package lab2
 
 import (
 	"errors"
-	"fmt"
 )
 
 type Node interface {
 	toPrefix() string
 }
 
-type NumberNode struct {
-	sum byte
+type LiteralNode struct {
+	value []byte
 }
 
-func (numberNode NumberNode) toPrefix() string {
-	prefix := string(numberNode.sum)
+func (LiteralNode LiteralNode) toPrefix() string {
+	prefix := string(LiteralNode.value)
 	return prefix
 }
 
 type ExpressionNode struct {
 	lhs      Node
 	rhs      Node
-	operator byte
+	operator []byte
 }
 
 func (expressionNode ExpressionNode) toPrefix() string {
-	var prefix string = string(expressionNode.operator) + " " + expressionNode.rhs.toPrefix() + " " + expressionNode.lhs.toPrefix()
+	var prefix = string(expressionNode.operator) + " " + expressionNode.rhs.toPrefix() + " " + expressionNode.lhs.toPrefix()
 	return prefix
 }
 
-type Stack []byte
+type Stack []Token
 
-func (stack *Stack) pop() (byte, error) {
+func (stack *Stack) pop() (Token, error) {
 	if len(*stack) == 0 {
-		return 0, errors.New("Stack is empty")
+		return Token{}, errors.New("Stack is empty")
 	} else {
 		index := len(*stack) - 1
 		elem := (*stack)[index]
@@ -45,22 +44,21 @@ func (stack *Stack) pop() (byte, error) {
 
 func ToAST(stack *Stack) Node {
 	top, _ := stack.pop()
-	if '0' <= top && top <= '9' {
-		return NumberNode{top}
+	if top.Type == Literal {
+		return LiteralNode{top.Literal}
 	}
 	lhs := ToAST(stack)
 	rhs := ToAST(stack)
-	return ExpressionNode{lhs, rhs, top}
+	return ExpressionNode{lhs, rhs, top.Literal}
 }
 
-//TODO: add token split function
-//Example of use
-// tokenStack := Stack{'4', '2', '-', '3', '*', '5', '+'}
-// ast := ToAST(&tokenStack)
-// fmt.Println(ast.toPrefix())
-
-// TODO: document this function.
-// PrefixToPostfix converts
 func PostfixToPrefix(input string) (string, error) {
-	return "TODO", fmt.Errorf("TODO")
+	var tokens = Stack(Tokenize(input))
+	for _, tk := range tokens {
+		if tk.Type != Literal && tk.Type != Operator {
+			return "", errors.New("Unknown token: " + string(tk.Literal))
+		}
+	}
+	var ast = ToAST(&tokens)
+	return ast.toPrefix(), nil
 }
