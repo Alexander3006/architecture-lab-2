@@ -12,8 +12,8 @@ type LiteralNode struct {
 	value []byte
 }
 
-func (LiteralNode LiteralNode) toPrefix() string {
-	prefix := string(LiteralNode.value)
+func (literalNode LiteralNode) toPrefix() string {
+	prefix := string(literalNode.value)
 	return prefix
 }
 
@@ -39,16 +39,15 @@ func (stack *Stack) pop() (Token, error) {
 		*stack = (*stack)[:index]
 		return elem, nil
 	}
-
 }
 
-func ToAST(stack *Stack) Node {
+func toAST(stack *Stack) Node {
 	top, _ := stack.pop()
 	if top.Type == Literal {
 		return LiteralNode{top.Literal}
 	}
-	lhs := ToAST(stack)
-	rhs := ToAST(stack)
+	lhs := toAST(stack)
+	rhs := toAST(stack)
 	return ExpressionNode{lhs, rhs, top.Literal}
 }
 
@@ -59,6 +58,6 @@ func PostfixToPrefix(input string) (string, error) {
 			return "", errors.New("Unknown token: " + string(tk.Literal))
 		}
 	}
-	var ast = ToAST(&tokens)
+	var ast = toAST(&tokens)
 	return ast.toPrefix(), nil
 }
