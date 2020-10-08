@@ -1,4 +1,7 @@
-Шаблон для 2-гої роботи з архітектури ПЗ
----
+# KPI-Architecture 2 Lab
 
-Використайте кнопку **"Use this template"**, щоб створити власний репозиторій.
+##Redstone Team:
+
+- Serhiychuk Nazar
+- Rozhon Olexandr
+- Ivanchenko Vyacheslav
