@@ -2,6 +2,7 @@ package lab2
 
 import (
 	"errors"
+	"fmt"
 )
 
 type Node interface {
@@ -24,8 +25,10 @@ type ExpressionNode struct {
 }
 
 func (expressionNode ExpressionNode) toPrefix() string {
-	var prefix = string(expressionNode.operator) + " " + expressionNode.rhs.toPrefix() + " " + expressionNode.lhs.toPrefix()
-	return prefix
+	op := string(expressionNode.operator)
+	rhs := expressionNode.rhs.toPrefix()
+	lhs := expressionNode.lhs.toPrefix()
+	return fmt.Sprintf("%s %s %s", op, rhs, lhs)
 }
 
 type Stack []Token
@@ -41,23 +44,43 @@ func (stack *Stack) pop() (Token, error) {
 	}
 }
 
-func toAST(stack *Stack) Node {
-	top, _ := stack.pop()
-	if top.Type == Literal {
-		return LiteralNode{top.Literal}
+func toOperator(stack *Stack, top Token) (Node, error) {
+	lhs, lerr := toAST(stack)
+	if lerr != nil {
+		return nil, lerr
 	}
-	lhs := toAST(stack)
-	rhs := toAST(stack)
-	return ExpressionNode{lhs, rhs, top.Literal}
+	rhs, rerr := toAST(stack)
+	if rerr != nil {
+		return nil, rerr
+	}
+	return ExpressionNode{lhs, rhs, top.Literal}, nil
+}
+
+func toAST(stack *Stack) (Node, error) {
+	top, err := stack.pop()
+	if err != nil {
+		return nil, errors.New("Unexpected end")
+	}
+	if top.Type == Literal {
+		return LiteralNode{top.Literal}, nil
+	} else if top.Type == Operator {
+		return toOperator(stack, top)
+	} else {
+		return nil, fmt.Errorf("Unexpected token: %s", string(top.Literal))
+	}
 }
 
 func PostfixToPrefix(input string) (string, error) {
 	var tokens = Stack(Tokenize(input))
-	for _, tk := range tokens {
-		if tk.Type != Literal && tk.Type != Operator {
-			return "", errors.New("Unknown token: " + string(tk.Literal))
+	var ast, err = toAST(&tokens)
+	if err == nil {
+		if len(tokens) != 0 {
+			top, _ := tokens.pop()
+			err = fmt.Errorf("Unexpected token: %s", string(top.Literal))
+			return "", err
 		}
+		return ast.toPrefix(), nil		
+	} else {
+		return "", err
 	}
-	var ast = toAST(&tokens)
-	return ast.toPrefix(), nil
 }
