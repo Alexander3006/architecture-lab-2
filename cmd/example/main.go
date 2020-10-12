@@ -3,26 +3,59 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
+	"os"
+	"strings"
 
 	lab2 "github.com/roman-mazur/architecture-lab-2"
 )
 
 var (
 	inputExpression = flag.String("e", "", "Expression to compute")
-	// TODO: Add other flags support for input and output configuration.
+	inputFile       = flag.String("f", "", "File with expression to compute")
+	outputFile      = flag.String("o", "", "File to output the result")
 )
 
 func main() {
 	flag.Parse()
+	var reader io.Reader
+	var writer io.Writer
+	//Reader
+	if len(*inputExpression) > 0 {
+		reader = strings.NewReader(*inputExpression)
+	} else if len(*inputFile) > 0 {
+		file, err := os.Open(*inputFile)
+		defer file.Close()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		reader = file
+	} else {
+		fmt.Println("Reader interface not defined")
+		os.Exit(1)
+	}
+	//Writer
+	if len(*outputFile) > 0 {
+		file, err := os.Create(*outputFile)
+		defer file.Close()
+		if err != nil {
+			fmt.Println("Unable to create file:", err)
+			os.Exit(1)
+		}
+		writer = file
+	} else {
+		writer = os.Stdout
+	}
 
-	// TODO: Change this to accept input from the command line arguments as described in the task and
-	//       output the results using the ComputeHandler instance.
-	//       handler := &lab2.ComputeHandler{
-	//           Input: {construct io.Reader according the command line parameters},
-	//           Output: {construct io.Writer according the command line parameters},
-	//       }
-	//       err := handler.Compute()
+	handler := &lab2.ComputeHandler{
+		Input:  reader,
+		Output: writer,
+	}
 
-	res, _ := lab2.PostfixToPrefix("2 2 +")
-	fmt.Println(res)
+	err := handler.Compute()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
