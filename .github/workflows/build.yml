@@ -1,0 +1,19 @@
+name: Build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Build and test the executable
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Build executable
+        run: make out/example
+      - name: Run tests
+        run: make test
