@@ -13,6 +13,7 @@ func TestPostfixToPrefix(t *testing.T) {
 	}{
 		{ "2 2 +", "+ 2 2" },
 		{ "4 2 - 3 * 5 +", "+ * - 4 2 3 5" },
+		{ "4 2 -", "4 2 -" },
 	}
 
 	for _, c := range cases {
