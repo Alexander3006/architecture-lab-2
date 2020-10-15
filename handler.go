@@ -25,5 +25,6 @@ func (ch *ComputeHandler) Compute() error {
 		return err
 	}
 	ch.Output.Write([]byte(result))
+	ch.Output.Write([]byte("\n"))
 	return nil
 }
